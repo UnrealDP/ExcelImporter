@@ -67,5 +67,51 @@ C:/Unreal Projects/excel_plugin/Plugins/
 
 <details>
 <summary>한글 설명</summary>
+<summary>한글 설명</summary>
 
 ## 사용 방법
+
+1. `Plugins/ExcelImporter/Content/DT_DataTypeSettings.uasset`에 데이터를 정의합니다.  
+   데이터 구조는 다음과 같습니다:
+
+   - **RowName**: Excel에서 사용될 자료형의 문자열 키 값.
+   - **UnrealCodeDataType**: Unreal Engine에서 실제로 사용되는 자료형(C++ 코드 기준).  
+   
+   예시:
+
+   | RowName      | UnrealCodeDataType |
+   |--------------|--------------------|
+   | `Bool`       | `bool`             |
+   | `Int`        | `int32`            |
+   | `Float`      | `float`            |
+   | `Texture2D`  | `UTexture2D*`      |
+   | `SkeletalMesh`| `USkeletalMesh*`  |
+
+2. `Plugins/ExcelImporter/Content/DT_ExcelImportSettings.uasset`에 파일과 폴더 경로를 설정합니다.  
+   설정할 필드는 다음과 같습니다:
+
+   - **RowName**: 최종적으로 생성될 DataTable 파일명.
+   - **ExcelFilePath**: 원본 Excel 파일 경로(.xlsx 확장자 포함).
+   - **SheetName**: Excel 파일에서 추출할 시트 이름.
+   - **GeneratedCodePath**: 생성된 헤더 파일이 저장될 경로(.h 확장자 포함).
+   - **DataTablePath**: 최종적으로 생성될 DataTable의 폴더 경로(파일명은 미포함).
+
+3. Unreal Editor에서 `Window > ImportExcelData`로 팝업을 엽니다.
+
+4. 변환할 Excel 파일의 체크박스를 선택합니다.
+
+5. `Generate Selected to C++ Header` 버튼을 클릭합니다.
+
+6. 헤더 파일이 생성되면, Unreal Editor가 자동으로 재시작되어 올바르게 적용됩니다.
+
+7. 재시작 후 다시 `Window > ImportExcelData`에서 팝업을 엽니다.
+
+8. Excel 데이터를 DataTable로 변환할 파일의 체크박스를 선택합니다.
+
+9. `Create DataTable` 버튼을 클릭하여 DataTable을 생성합니다.
+
+## 알려진 문제
+
+- DataTable을 처음 생성할 때 참조 횟수가 1로 설정되어, 바로 삭제할 수 없는 문제가 발생할 수 있습니다. 이 경우, Force Delete를 사용하거나 Unreal Editor를 재시작한 후 삭제할 수 있습니다.
+
+</details>
