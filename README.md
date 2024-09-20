@@ -9,9 +9,9 @@ Make sure that all three repositories are in the same folder structure, like thi
 
 ```
 C:/Unreal Projects/excel_plugin/Plugins/
-    ├── Unreal_ExcelImporter/
-    ├── Unreal_SlateEditorUtils/
-    └── Unreal_EditorPackageUtils/
+    ├── ExcelImporter/
+    ├── SlateEditorUtils/
+    └── EditorPackageUtils/
 ```
 
 <details>
