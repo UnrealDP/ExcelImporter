@@ -1,9 +1,9 @@
 # ExcelImporter
 
-Please download the following repositories at the same level as `Unreal_ExcelImporter`:
+Please download the following repositories at the same level as `Unreal ExcelImporter`:
 
-- [Unreal_SlateEditorUtils](https://github.com/dipi0123/Unreal_SlateEditorUtils.git)
-- [Unreal_EditorPackageUtils](https://github.com/dipi0123/Unreal_EditorPackageUtils.git)
+- [Unreal SlateEditorUtils](https://github.com/UnrealDP/SlateEditorUtils.git)
+- [Unreal EditorPackageUtils](https://github.com/UnrealDP/EditorPackageUtils.git)
 
 Make sure that all three repositories are in the same folder structure, like this:
 
