@@ -73,5 +73,6 @@ Plugins/*/Intermediate/*
 # Cache files for the editor to use
 DerivedDataCache/*
 
-# 예외 처리: OpenXLSX 폴더 내의 모든 파일 추적
-!ThirdParty/OpenXLSX/Lib/*
+# 예외 처리: OpenXLSX/Lib 폴더 전체를 무시하지 않음
+!ThirdParty/OpenXLSX/Lib/
+!ThirdParty/OpenXLSX/Lib/**
