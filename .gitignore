@@ -74,5 +74,4 @@ Plugins/*/Intermediate/*
 DerivedDataCache/*
 
 # 예외 처리: OpenXLSX 폴더 내의 모든 파일 추적
-!ThirdParty/OpenXLSX/Lib/
-!ThirdParty/OpenXLSX/Lib/*.lib
+!ThirdParty/OpenXLSX/Lib/*
