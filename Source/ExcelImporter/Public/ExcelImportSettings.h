@@ -28,4 +28,10 @@ public:
     // The path where the generated DataTable asset will be saved. Include the asset name and extension (e.g., /Game/DataTables/MyDataTable).
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Excel Import", meta = (Tooltip = "Specify the path for the generated data table. Use a relative path from the project root folder. Example: Content/DataTables/MyDataTable.uasset."))
     FString DataTablePath;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Excel Import", meta = (Tooltip = "Specify the prefix for the struct name if the InheritedDataStruct has a prefix (e.g., 'F' for FTableRowBase). Leave empty if the struct name has no prefix."))
+    FString StructPrefix = "F";
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Excel Import", meta = (Tooltip = "Specify the name of the class that inherits from FTableRowBase. The default is 'FTableRowBase'. Provide the class name as a string."))
+    TSoftObjectPtr<UScriptStruct> InheritedDataStruct = TSoftObjectPtr<UScriptStruct>(FSoftObjectPath(TEXT("/Script/Engine.TableRowBase")));
 };

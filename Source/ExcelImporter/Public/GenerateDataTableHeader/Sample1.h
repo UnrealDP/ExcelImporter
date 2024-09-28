@@ -11,15 +11,15 @@ struct FSample1  : public FTableRowBase
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-	FString Name;
+	FString Name = "";
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-	int32 Num;
+	int32 Num =  0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-	float Score;
+	float Score = 0.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-	UTexture2D* IconTexture;
+	UTexture2D* IconTexture = nullptr;
 
 };

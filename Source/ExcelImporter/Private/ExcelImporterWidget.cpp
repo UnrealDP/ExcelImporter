@@ -1,4 +1,4 @@
-﻿#include "ExcelImporterWidget.h"
+#include "ExcelImporterWidget.h"
 #include "ExcelImportSettings.h"
 #include "SlateOptMacros.h"
 #include "SlateEditorUtils.h"
@@ -192,39 +192,23 @@ void SExcelImporterWidget::OnFileCheckboxChanged(ECheckBoxState NewState, TShare
 FReply SExcelImporterWidget::OnGeneratedClicked()
 {
     // 체크된 파일 목록
-    TArray<TSharedPtr<FExcelFileItem>> FilesToConvert;
+    TArray<TSharedPtr<FExcelFileItem>> ExcelFileItems;
     for (const TSharedPtr<FExcelFileItem>& Item : ExcelFiles)
     {
         if (Item->bIsChecked)
         {
-            FilesToConvert.Add(Item);
+            ExcelFileItems.Add(Item);
         }
     }
 
-    if (FilesToConvert.Num() == 0)
+    if (ExcelFileItems.Num() == 0)
     {
         ErrorMessage = FText::FromString(TEXT("No files selected for conversion."));
         return FReply::Handled();
     }
 
-    TArray<FString> ExcelPaths;
-    TArray<FString> SheetNames;
-    TArray<FString> GeneratedCodePaths;
-
-    for (const TSharedPtr<FExcelFileItem>& Item : FilesToConvert)
-    {
-        FString ExcelFilePath = Item->GetFullExcelFilePath();  // Excel 파일 경로 가져오기
-        FString SheetName = Item->GetSheetName();  // 시트명 가져오기
-        FString GeneratedCodePath = Item->GetFullGeneratedCodePath();  // 코드 출력 경로 가져오기
-
-        // 각각의 배열에 추가
-        ExcelPaths.Add(ExcelFilePath);
-        SheetNames.Add(SheetName);
-        GeneratedCodePaths.Add(GeneratedCodePath);
-    }
-
     // 이제 ExcelPaths와 OutputPaths를 ConvertMultipleExcelToCPP 함수로 넘길 수 있음
-    if (ConvertMultipleExcelToCPP(ExcelPaths, SheetNames, GeneratedCodePaths))
+    if (ConvertMultipleExcelToCPP(ExcelFileItems))
     {
         //UE_LOG(LogTemp, Log, TEXT("Excel to CPP 변환 성공"));
     }
@@ -310,23 +294,18 @@ FReply SExcelImporterWidget::OnUnSelectAllButtonClicked()
 }
 
 // Excel 파일을 읽고 C++ 코드 생성
-bool SExcelImporterWidget::ConvertMultipleExcelToCPP(const TArray<FString>& ExcelPaths, const TArray<FString>& SheetNames, const TArray<FString>& GeneratedCodePaths)
+bool SExcelImporterWidget::ConvertMultipleExcelToCPP(TArray<TSharedPtr<FExcelFileItem>>& ExcelFileItems)
 {
-    if (ExcelPaths.Num() != SheetNames.Num())
-    {
-        // Excel 경로와 출력 경로의 개수가 일치하지 않습니다.
-        UE_LOG(LogTemp, Error, TEXT("The number of Excel paths does not match the number of output paths."));
-        return false;
-    }
-
     TArray<FString> SuccessFilesList;
     TArray<FString> FailureFilesList;
 
-    for (int32 i = 0; i < ExcelPaths.Num(); ++i)
+    for (int32 i = 0; i < ExcelFileItems.Num(); ++i)
     {
-        FString ExcelFilePath = ExcelPaths[i];
-        FString SheetName = SheetNames[i];
-        FString OutputCodePath = GeneratedCodePaths[i];
+        FString ExcelFilePath = ExcelFileItems[i]->GetFullExcelFilePath();
+        FString SheetName = ExcelFileItems[i]->GetSheetName();
+        FString OutputCodePath = ExcelFileItems[i]->GetFullGeneratedCodePath();
+        FString StructPrefix = ExcelFileItems[i]->GetStructPrefix();
+        TSoftObjectPtr<UScriptStruct> Inherited = ExcelFileItems[i]->GetInherited();
 
         try
         {
@@ -363,8 +342,8 @@ bool SExcelImporterWidget::ConvertMultipleExcelToCPP(const TArray<FString>& Exce
             }
 
             // C++ 코드 생성
-            FString BaseFileName = FPaths::GetBaseFilename(ExcelFilePath);
-            FString GeneratedCode = GenerateCPPCode(BaseFileName, FirstRow, SecondRow);
+            FString BaseFileName = FPaths::GetBaseFilename(OutputCodePath);
+            FString GeneratedCode = GenerateCPPCode(BaseFileName, StructPrefix, Inherited, FirstRow, SecondRow);
             FFileHelper::SaveStringToFile(GeneratedCode, *OutputCodePath);
 
             SuccessFilesList.Add(ExcelFilePath);
@@ -424,44 +403,74 @@ bool SExcelImporterWidget::ConvertMultipleExcelToCPP(const TArray<FString>& Exce
 }
 
 // C++ 코드 생성 함수
-FString SExcelImporterWidget::GenerateCPPCode(const FString& FileName, const TArray<FString>& VariableNames, const TArray<FString>& DataTypes)
+FString SExcelImporterWidget::GenerateCPPCode(
+    const FString& FileName, 
+    const FString& StructPrefix, 
+    const TSoftObjectPtr<UScriptStruct> Inherited, 
+    const TArray<FString>& VariableNames, 
+    const TArray<FString>& DataTypes)
 {
     FString GeneratedCode = "#pragma once\n\n";
     GeneratedCode += "#include \"CoreMinimal.h\"\n";    
     GeneratedCode += "#include \"Engine/DataTable.h\"\n";
+
+    // Include 경로 추가 - Inherited 구조체 경로 파악
+    if (Inherited.IsValid())
+    {
+        // 전체 경로에서 모듈 이름과 구조체/클래스 이름을 '.'을 기준으로 분리
+        FString StructPath = Inherited.Get()->GetPathName();  // 전체 경로 예: /Script/ModuleName.StructName
+        FString ModulePath, IncludePath;
+        StructPath.Split(TEXT("."), &ModulePath, &IncludePath);  // ModuleName은 /Script/ModuleName, StructName은 구조체 이름
+
+        IncludePath += TEXT(".h");
+
+        GeneratedCode += FString::Printf(TEXT("#include \"%s\"\n"), *IncludePath);
+    }
+
     GeneratedCode += FString::Printf(TEXT("#include \"%s.generated.h\"\n\n"), *FileName);
     GeneratedCode += "USTRUCT(BlueprintType)\n";
-    GeneratedCode += FString::Printf(TEXT("struct F%s  : public FTableRowBase\n"), *FileName);
+    GeneratedCode += FString::Printf(TEXT("struct F%s : public %s%s\n"), *FileName, *StructPrefix, *Inherited.Get()->GetName());
     GeneratedCode += "{\n";
     GeneratedCode += "\tGENERATED_BODY()\n\n";
     GeneratedCode += "public:\n";
 
+    // 부모 구조체에서 정의된 필드 목록 가져오기
+    TArray<FString> ParentFieldNames;
+    if (Inherited.IsValid())
+    {
+        for (TFieldIterator<FProperty> It(Inherited.Get()); It; ++It)
+        {
+            ParentFieldNames.Add(It->GetNameCPP());
+        }
+    }
+
     // 첫번째는 데이터 ID
     for (int i = 1; i < VariableNames.Num(); i++)
     {
-        FString UnrealType = MapExcelTypeToUnreal(FName(DataTypes[i]));
-        GeneratedCode += FString::Printf(TEXT("\tUPROPERTY(EditAnywhere, BlueprintReadWrite, Category = \"Data\")\n\t%s %s;\n\n"),
-            *UnrealType, *VariableNames[i]);
+        // 부모 구조체에 이미 정의된 필드이면 건너뜀
+        if (ParentFieldNames.Contains(VariableNames[i]))
+        {
+            continue;  // 이미 부모에 정의된 필드
+        }
+
+        // Excel 자료형을 Unreal 자료형으로 변환
+        FString UnrealType;
+        FString InitData;
+
+        FString ContextString(TEXT("DataTypeSettingsContext"));
+        FDataTypeSettings* Row = DataTypeSettingsDataTable->FindRow<FDataTypeSettings>(FName(DataTypes[i]), ContextString);
+        if (Row)
+        {
+            UnrealType = Row->UnrealCodeDataType;
+            InitData = Row->InitData;
+
+            GeneratedCode += FString::Printf(TEXT("\tUPROPERTY(EditAnywhere, BlueprintReadWrite, Category = \"Data\")\n\t%s %s = %s;\n\n"),
+                *UnrealType, *VariableNames[i], *InitData);
+        }
     }
 
     GeneratedCode += "};\n";
     return GeneratedCode;
-}
-
-// Excel 자료형을 Unreal 자료형으로 변환하는 함수
-FString SExcelImporterWidget::MapExcelTypeToUnreal(const FName& ExcelType)
-{
-    FString ContextString(TEXT("DataTypeSettingsContext"));
-    FDataTypeSettings* Row = DataTypeSettingsDataTable->FindRow<FDataTypeSettings>(ExcelType, ContextString);
-    if (Row)
-    {
-        return Row->UnrealCodeDataType;
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Could not find row with key: %s in context: %s"), *ExcelType.ToString(), *ContextString);
-        return TEXT("UnknownType");
-    }
 }
 
 bool SExcelImporterWidget::CreateDataTable(const TArray<FString>& ExcelPaths, const TArray<FString>& SheetNames, TArray<FString>& GeneratedCodePaths, const TArray<FString>& DataTablePaths)
@@ -562,13 +571,14 @@ bool SExcelImporterWidget::CreateDataTableFromExcel(const FString& ExcelFilePath
             return false;
         }
 
-        // 3. 두 번째 행 읽어서 자료형 가져오기
-        //TArray<FString> DataTypes;
-        //OpenXLSX::XLRow row = wks.row(2);  // 2번째 행에 직접 접근
-        //for (auto cell : row.cells())
-        //{
-        //    DataTypes.Add(UTF8_TO_TCHAR(cell.value().getString().c_str()));
-        //}
+        // 3. 첫 번째 행 읽어서 변수명 가져오기
+        OpenXLSX::XLRow row = wks.row(1);  // 1번째 행에 직접 접근
+        TArray<FString> VariableNames;
+        int cellCnt = row.cellCount();
+        for (auto cell : row.cells())
+        {
+            VariableNames.Add(UTF8_TO_TCHAR(cell.value().getString().c_str()));
+        }
 
         // 4. 해더파일 경로로 해더파일에 선언된 데이터 구조체의 구성 정보를 가져옴
         UScriptStruct* RowStruct = LoadStructFromHeaderPath(HeaderFilePath);
@@ -582,6 +592,11 @@ bool SExcelImporterWidget::CreateDataTableFromExcel(const FString& ExcelFilePath
             return false;
         }
 
+        // NewDataTable->AddRow 여기에서 왜 add 한 역순으로 들어가는지 모르겠다
+        // 내부는 어차피 Map 이라 순서 보장은 안되지만, 태이블 뷰어에서 역순으로 보이는게 너무 싫어서 임시 버퍼에 넣은 후 역순으로 add함
+        TArray<FName> RowNames;
+        TArray<FTableRowBase*> RowDataList;
+
         // 6. 엑셀 데이터 3번째 행부터 파싱
         int32 RowIndex = 3; // 3번째 행부터 시작 (1번째는 데이터 변수명, 2번째는 데이터 자료형, 3번째 부터 데이터)
         while (true)
@@ -594,7 +609,7 @@ bool SExcelImporterWidget::CreateDataTableFromExcel(const FString& ExcelFilePath
             }
 
             // 새 행을 DataTable에 추가
-            FTableRowBase* NewRow = CreateDataTableRowFromExcel(RowStruct, wks, RowIndex);
+            FTableRowBase* NewRow = CreateDataTableRowFromExcel(RowStruct, VariableNames, wks, RowIndex);
             if (NewRow == nullptr)
             {
                 UE_LOG(LogTemp, Error, TEXT("Failed to create row for row index: %d"), RowIndex);
@@ -602,11 +617,20 @@ bool SExcelImporterWidget::CreateDataTableFromExcel(const FString& ExcelFilePath
                 return false;
             }
 
-            // DataTable에 새로 생성한 행 추가
-            NewDataTable->AddRow(FName(*FirstColumnValue), *NewRow);
+            RowNames.Add(FName(*FirstColumnValue));
+            RowDataList.Add(NewRow);
 
             RowIndex++;
         }
+
+        // NewDataTable->AddRow 여기에서 왜 add 한 역순으로 들어가는지 모르겠다
+        // 내부는 어차피 Map 이라 순서 보장은 안되지만, 태이블 뷰어에서 역순으로 보이는게 너무 싫어서 임시 버퍼에 넣은 후 역순으로 add함
+        for (int32 i = RowNames.Num() - 1; i >= 0; --i)
+        {
+            NewDataTable->AddRow(RowNames[i], *RowDataList[i]);
+        }
+        RowNames.Empty();
+        RowDataList.Empty();
 
         // 7. DataTable 어셋 저장
         //SaveDataTableAsset(NewDataTable, DataTablePath);
@@ -651,15 +675,6 @@ bool SExcelImporterWidget::CreateDataTableFromExcel(const FString& ExcelFilePath
         
         //// 패키지 저장 후 참조 해제 및 가비지 컬렉션 실행
         RowStruct = nullptr; // 참조 해제
-        
-
-        //// 패키지 언로드
-        if (SavedPackage)
-        {
-            TArray<UPackage*> PackagesToUnload = { SavedPackage };
-            PackageTools::UnloadPackages(PackagesToUnload);
-        }
-        CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS); // 가비지 컬렉션 강제 실행
 
         doc.close();
         return true;
@@ -789,33 +804,46 @@ FTableRowBase* SExcelImporterWidget::CreateDataTableRowFromExcel(
     * 여기로 들어오는 RowStruct 파라미터는 새로 인스턴스 만들기 위한 참조용
     */
     const UScriptStruct* const RowStruct, 
+    const TArray<FString>& VariableNames,
     const OpenXLSX::XLWorksheet& wks, 
     int32 RowIndex)
 {
-    
+    UE_LOG(LogTemp, Error, TEXT("################## %d"), VariableNames.Num());
+
     // 1. RowStruct의 크기만큼 메모리 할당 및 초기화
     FTableRowBase* NewRow = (FTableRowBase*)FMemory::Malloc(RowStruct->GetStructureSize());
     RowStruct->InitializeStruct(NewRow);
 
-    // 2. 엑셀 열 인덱스를 관리하기 위한 변수
-    int32 ColIndex = 2;  // 엑셀의 두 번째 열부터 시작 (첫 번째는 ID임)
-
-    // 3. 구조체의 모든 필드에 대한 매핑 시작
+    // 2. 구조체의 모든 필드에 대한 매핑 시작
     for (TFieldIterator<FProperty> It(RowStruct); It; ++It)
     {
         FProperty* StructProperty = *It;
 
+        // FProperty의 이름과 VariableNames에서 가져온 변수명 비교
+        FString PropertyName = StructProperty->GetNameCPP();
+        // VariableNames에서 FProperty와 일치하는 이름의 인덱스 찾기
+        int32 MatchingIndex = VariableNames.IndexOfByKey(PropertyName);
+
+        UE_LOG(LogTemp, Error, TEXT("################## %s %d"), *PropertyName, MatchingIndex);
+
+        // MatchingIndex == 0 -> 첫번째는 ID 임
+        if (MatchingIndex == 0 || MatchingIndex == INDEX_NONE)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("No matching column found for property: %s"), *PropertyName);
+            continue; // 일치하는 열이 없으면 건너뜀
+        }
+
         // 엑셀 데이터 읽기
-        FString CellValue = FString(wks.cell(RowIndex, ColIndex).value().getString().c_str());
+        FString CellValue = FString(wks.cell(RowIndex, MatchingIndex + 1).value().getString().c_str());
+        UE_LOG(LogTemp, Error, TEXT("################## --- %s %s"), *PropertyName, *CellValue);
 
         // 엑셀 데이터가 비어 있으면 건너뜀
         if (CellValue.IsEmpty())
         {
-            ColIndex++;
             continue;
         }
 
-        // 4. 각 필드의 자료형에 따라 값을 설정
+        // 3. 각 필드의 자료형에 따라 값을 설정
         if (FStrProperty* StringProperty = CastField<FStrProperty>(StructProperty))
         {
             StringProperty->SetPropertyValue_InContainer(NewRow, CellValue);
@@ -857,12 +885,9 @@ FTableRowBase* SExcelImporterWidget::CreateDataTableRowFromExcel(
         {
             UE_LOG(LogTemp, Warning, TEXT("Unsupported property type for field: %s"), *StructProperty->GetNameCPP());
         }
-
-        // 다음 열로 이동
-        ColIndex++;
     }
 
-    // 5. 생성된 Row 반환
+    // 4. 생성된 Row 반환
     return NewRow;
 }
 

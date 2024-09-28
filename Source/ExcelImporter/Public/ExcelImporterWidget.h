@@ -5,7 +5,7 @@
 #include "ExcelImportSettings.h"
 
 namespace OpenXLSX {
-    class XLWorksheet;  // XLWorksheet sms OpenXLSX ≥◊¿”Ω∫∆‰¿ÃΩ∫
+    class XLWorksheet;  // XLWorksheet sms OpenXLSX ÎÑ§ÏûÑÏä§ÌéòÏù¥Ïä§
 }
 
 
@@ -13,8 +13,8 @@ class SExcelImporterWidget : public SCompoundWidget
 {
     struct FExcelFileItem
     {
-        FExcelImportSettings ExcelImportSettings;  // æ◊ºø import ¡§∫∏
-        bool bIsChecked;    // √º≈© ªÛ≈¬
+        FExcelImportSettings ExcelImportSettings;  // Ïï°ÏÖÄ import Ï†ïÎ≥¥
+        bool bIsChecked;    // Ï≤¥ÌÅ¨ ÏÉÅÌÉú
 
         FExcelFileItem(const FExcelImportSettings& InExcelImportSettings)
             : ExcelImportSettings(InExcelImportSettings), bIsChecked(false)
@@ -35,6 +35,14 @@ class SExcelImporterWidget : public SCompoundWidget
         FString GetFullDataTablePath() const
         {
             return FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir() / ExcelImportSettings.DataTablePath);
+        }
+        FString GetStructPrefix() const
+        {
+            return ExcelImportSettings.StructPrefix;
+        }
+        TSoftObjectPtr<UScriptStruct> GetInherited() const
+        {
+            return ExcelImportSettings.InheritedDataStruct;
         }
     };
 
@@ -60,21 +68,20 @@ private:
     void OnCheckBoxStateChanged(ECheckBoxState NewState, TSharedPtr<FExcelFileItem> InItem);
     void OnFileCheckboxChanged(ECheckBoxState NewState, TSharedPtr<FString> FileName);
 
-    bool ConvertMultipleExcelToCPP(const TArray<FString>& ExcelPaths, const TArray<FString>& SheetNames, const TArray<FString>& GeneratedCodePaths);
-    FString GenerateCPPCode(const FString& FileName, const TArray<FString>& VariableNames, const TArray<FString>& DataTypes);
-    FString MapExcelTypeToUnreal(const FName& ExcelType);
+    bool ConvertMultipleExcelToCPP(TArray<TSharedPtr<FExcelFileItem>>& ExcelFileItems);
+    FString GenerateCPPCode(const FString& FileName, const FString& StructPrefix, const TSoftObjectPtr<UScriptStruct> Inherited, const TArray<FString>& VariableNames, const TArray<FString>& DataTypes);
 
     bool CreateDataTable(const TArray<FString>& ExcelPaths, const TArray<FString>& SheetNames, TArray<FString>& GeneratedCodePaths, const TArray<FString>& DataTablePaths);
     bool CreateDataTableFromExcel(const FString& ExcelFilePath, const FString& SheetName, const FString& GeneratedCodePath, const FString& DataTablePath);
     UScriptStruct* LoadStructFromHeaderPath(const FString& HeaderFilePath);
     UDataTable* CreateNewOrClearDataTable(UScriptStruct* RowStruct, const FString& ClassName, const FString& DataTablePath);
     UDataTable* ClearDataTableRows(const FString& DataTablePath, const FString& DataTableName);
-    FTableRowBase* CreateDataTableRowFromExcel(const UScriptStruct* const RowStruct, const OpenXLSX::XLWorksheet& wks, int32 RowIndex);
+    FTableRowBase* CreateDataTableRowFromExcel(const UScriptStruct* const RowStruct, const TArray<FString>& VariableNames, const OpenXLSX::XLWorksheet& wks, int32 RowIndex);
     void SaveDataTableAsset(UDataTable* DataTable, const FString& DataTablePath);
 
     FText ErrorMessage;
     UDataTable* ExcelImportSettingsDataTable;
     UDataTable* DataTypeSettingsDataTable;
-    TArray<TSharedPtr<FExcelFileItem>> ExcelFiles;  // Excel ∆ƒ¿œ ∏ÆΩ∫∆Æ
-    TSharedPtr<SListView<TSharedPtr<FExcelFileItem>>> ExcelListView;  // SListView ∏‚πˆ ∫Øºˆ √ﬂ∞°
+    TArray<TSharedPtr<FExcelFileItem>> ExcelFiles;  // Excel ÌååÏùº Î¶¨Ïä§Ìä∏
+    TSharedPtr<SListView<TSharedPtr<FExcelFileItem>>> ExcelListView;  // SListView Î©§Î≤Ñ Î≥ÄÏàò Ï∂îÍ∞Ä
 };

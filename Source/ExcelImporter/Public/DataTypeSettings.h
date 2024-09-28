@@ -14,5 +14,8 @@ struct FDataTypeSettings : public FTableRowBase
 
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Import Type", meta = (Tooltip = "Corresponding Unreal Engine data type for the input from the Excel file"))
-    FString UnrealCodeDataType;
+    FString UnrealCodeDataType = "";
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Import Type", meta = (Tooltip = "Input the initialization value. The inputted value will be used to generate C++ code."))
+    FString InitData = "";
 };
