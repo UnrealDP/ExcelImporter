@@ -56,8 +56,8 @@ public class ExcelImporter : ModuleRules
                 "AssetRegistry",
                 "Projects",
 				/*"Engine",
-                "AssetRegistry", // Engine ÇÊ¿ä
-				"CoreUObject"  // UObject °ü·Ã ÀÇÁ¸¼º Ãß°¡*/
+                "AssetRegistry", // Engine í•„ìš”
+				"CoreUObject"  // UObject ê´€ë ¨ ì˜ì¡´ì„± ì¶”ê°€*/
 
 				"SlateEditorUtils",
                 "EditorPackageUtils",
@@ -73,18 +73,21 @@ public class ExcelImporter : ModuleRules
 			}
 			);
 
-        // OpenXLSX °æ·Î ¼³Á¤
-        string OpenXLSXPath = Path.Combine(ModuleDirectory, "..", "..", "ThirdParty", "OpenXLSX");
+        // í”ŒëŸ¬ê·¸ì¸ì˜ ë£¨íŠ¸ ë””ë ‰í† ë¦¬ë¡œ ì´ë™
+        string PluginRootDirectory = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", ".."));
 
-        // Çì´õ ÆÄÀÏ °æ·Î ¼³Á¤
+        // OpenXLSX ê²½ë¡œ ì„¤ì •
+        string OpenXLSXPath = Path.Combine(PluginRootDirectory, "ThirdParty", "OpenXLSX");
+
+        // í—¤ë” íŒŒì¼ ê²½ë¡œ ì„¤ì •
         PublicIncludePaths.Add(Path.Combine(OpenXLSXPath, "Includes"));
 
-        // ¶óÀÌºê·¯¸® ÆÄÀÏ °æ·Î ¼³Á¤
+        // ë¼ì´ë¸ŒëŸ¬ë¦¬ íŒŒì¼ ê²½ë¡œ ì„¤ì •
         if (Target.Platform == UnrealTargetPlatform.Win64)
         {
             string OpenXLSXLibPath = Path.Combine(OpenXLSXPath, "Lib", "Win64", "OpenXLSX.lib");
 
-            // ¶óÀÌºê·¯¸® ÆÄÀÏÀÌ ½ÇÁ¦ Á¸ÀçÇÏ´ÂÁö È®ÀÎ
+            // ë¼ì´ë¸ŒëŸ¬ë¦¬ íŒŒì¼ì´ ì‹¤ì œ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸
             if (File.Exists(OpenXLSXLibPath))
             {
                 PublicAdditionalLibraries.Add(OpenXLSXLibPath);
