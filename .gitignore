@@ -25,9 +25,6 @@
 *.a
 *.lib
 
-# 예외 처리: OpenXLSX Lib 폴더에서 .lib 파일만 추적
-!ThirdParty/OpenXLSX/Lib/*.lib
-
 # Executables
 *.exe
 *.out
@@ -75,3 +72,7 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# 예외 처리: OpenXLSX 폴더 내의 모든 파일 추적
+!ThirdParty/OpenXLSX/Lib/
+!ThirdParty/OpenXLSX/Lib/*.lib
