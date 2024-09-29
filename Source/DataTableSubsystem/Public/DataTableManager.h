@@ -32,6 +32,12 @@ public:
         return Get().GetDataTable(TableType);
     }
 
+    template<typename T>
+    static T* Data(EDataTable TableType, const FName& RowKey)
+    {
+        return Get().GetData<T>(TableType, RowKey);
+    }
+
 protected:
     DataTableManager() 
     {
@@ -56,6 +62,28 @@ protected:
         bIsInitDataTablePath = false;
 
         UE_LOG(LogTemp, Log, TEXT("DataTableManager destroyed"));
+    }
+
+    template<typename T>
+    FString GetContextString()
+    {
+        // 컴파일 타임에 FTableRowBase 상속 여부를 체크
+        static_assert(TIsDerivedFrom<T, FTableRowBase>::IsDerived, "DataTableManager::GetContextString <T> must derive from FTableRowBase");
+        return FString::Printf(TEXT("%sContext"), *T::StaticStruct()->GetName());
+    }
+
+    template<typename T>
+    T* GetData(EDataTable TableType, const FName& RowKey)
+    {
+        UDataTable* DataTable = GetDataTable(TableType);
+        if (!DataTable)
+		{
+            UE_LOG(LogTemp, Error, TEXT("DataTableManager::GetData DataTable is invalid %d"), static_cast<int32>(TableType));
+			return nullptr;
+		}
+
+        FString ContextString = GetContextString<T>();
+        return DataTable->FindRow<T>(RowKey, ContextString, true);
     }
 
 private:
