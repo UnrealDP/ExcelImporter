@@ -12,7 +12,7 @@
  * Builder for UExcelImporterSimpleTool
  */
 UCLASS()
-class EXCELIMPORTER_API UExcelImporterSimpleToolBuilder : public UInteractiveToolBuilder
+class EXCELIMPORTEREDITOR_API UExcelImporterSimpleToolBuilder : public UInteractiveToolBuilder
 {
 	GENERATED_BODY()
 
@@ -28,7 +28,7 @@ public:
  * which provides an OnModified delegate that the Tool will listen to for changes in property values.
  */
 UCLASS(Transient)
-class EXCELIMPORTER_API UExcelImporterSimpleToolProperties : public UInteractiveToolPropertySet
+class EXCELIMPORTEREDITOR_API UExcelImporterSimpleToolProperties : public UInteractiveToolPropertySet
 {
 	GENERATED_BODY()
 public:
@@ -47,7 +47,7 @@ public:
  * clicks left mouse button. All the action is in the ::OnClicked handler.
  */
 UCLASS()
-class EXCELIMPORTER_API UExcelImporterSimpleTool : public USingleClickTool
+class EXCELIMPORTEREDITOR_API UExcelImporterSimpleTool : public USingleClickTool
 {
 	GENERATED_BODY()
 

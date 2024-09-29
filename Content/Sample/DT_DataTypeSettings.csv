@@ -1,0 +1,11 @@
+---,UnrealCodeDataType,InitData
+int8,"int8","0"
+int16,"int16","0"
+int32,"int32","0"
+int64,"in64","0"
+float,"float","0.0f"
+double,"double","0.0"
+FString,"FString",""""""
+FText,"FText",""""""
+FName,"FName",""""""
+FSoftObjectPath,"FSoftObjectPath","nullptr"

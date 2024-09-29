@@ -9,7 +9,7 @@
  * This is the module definition for the editor mode. You can implement custom functionality
  * as your plugin module starts up and shuts down. See IModuleInterface for more extensibility options.
  */
-class FExcelImporterModule : public IModuleInterface
+class FExcelImporterEditorModule : public IModuleInterface
 {
 private:
 	void RegisterMenus();

@@ -1,15 +1,15 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "ExcelImporterModule.h"
+#include "ExcelImporterEditorModule.h"
 #include "ExcelImporterEditorModeCommands.h"
 #include "Misc/Paths.h"
 #include "HAL/PlatformProcess.h"
 #include "ExcelImporterWidget.h"
 
 
-#define LOCTEXT_NAMESPACE "ExcelImporterModule"
+#define LOCTEXT_NAMESPACE "ExcelImporterEditorModule"
 
-void FExcelImporterModule::StartupModule()
+void FExcelImporterEditorModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 
@@ -18,7 +18,7 @@ void FExcelImporterModule::StartupModule()
     RegisterMenus();
 }
 
-void FExcelImporterModule::ShutdownModule()
+void FExcelImporterEditorModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
@@ -26,7 +26,7 @@ void FExcelImporterModule::ShutdownModule()
 	FExcelImporterEditorModeCommands::Unregister();
 }
 
-void FExcelImporterModule::ConvertExcelToCSV(const FString& ExcelFilePath, const FString& CSVFilePath, const FString& SheetName)
+void FExcelImporterEditorModule::ConvertExcelToCSV(const FString& ExcelFilePath, const FString& CSVFilePath, const FString& SheetName)
 {
     FString ExecutablePath = FPaths::Combine(FPaths::ProjectPluginsDir(), TEXT("ExcelImporter/ThirdParty/ExcelToCSVConverter/ExcelToCSVConverter.exe"));
     FString CommandLine = FString::Printf(TEXT("\"%s\" \"%s\" \"%s\""), *ExcelFilePath, *CSVFilePath, *SheetName);
@@ -56,7 +56,7 @@ void FExcelImporterModule::ConvertExcelToCSV(const FString& ExcelFilePath, const
 }
 
 
-void FExcelImporterModule::RegisterMenus()
+void FExcelImporterEditorModule::RegisterMenus()
 {
     UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Window");
 
@@ -65,10 +65,10 @@ void FExcelImporterModule::RegisterMenus()
         LOCTEXT("ImportExcelDataMenuEntry", "Import Excel Data"),
         LOCTEXT("ImportExcelDataMenuEntryTooltip", "Opens the Excel Importer"),
         FSlateIcon(),
-        FUIAction(FExecuteAction::CreateRaw(this, &FExcelImporterModule::OpenExcelImporter)));
+        FUIAction(FExecuteAction::CreateRaw(this, &FExcelImporterEditorModule::OpenExcelImporter)));
 }
 
-void FExcelImporterModule::OpenExcelImporter()
+void FExcelImporterEditorModule::OpenExcelImporter()
 {
     // Create and display the ExcelImporterWidget
     TSharedRef<SWindow> Window = SNew(SWindow)
@@ -84,4 +84,4 @@ void FExcelImporterModule::OpenExcelImporter()
 
 #undef LOCTEXT_NAMESPACE
 
-IMPLEMENT_MODULE(FExcelImporterModule, ExcelImporterEditorMode)
+IMPLEMENT_MODULE(FExcelImporterEditorModule, ExcelImporterEditorMode)

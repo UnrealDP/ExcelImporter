@@ -298,6 +298,7 @@ bool SExcelImporterWidget::ConvertMultipleExcelToCPP(TArray<TSharedPtr<FExcelFil
 {
     TArray<FString> SuccessFilesList;
     TArray<FString> FailureFilesList;
+    TArray<FString> EnumStrs;
 
     for (int32 i = 0; i < ExcelFileItems.Num(); ++i)
     {
@@ -343,8 +344,9 @@ bool SExcelImporterWidget::ConvertMultipleExcelToCPP(TArray<TSharedPtr<FExcelFil
 
             // C++ 코드 생성
             FString BaseFileName = FPaths::GetBaseFilename(OutputCodePath);
+            EnumStrs.Add(BaseFileName);
             FString GeneratedCode = GenerateCPPCode(BaseFileName, StructPrefix, Inherited, FirstRow, SecondRow);
-            FFileHelper::SaveStringToFile(GeneratedCode, *OutputCodePath);
+            FFileHelper::SaveStringToFile(GeneratedCode, *OutputCodePath, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
 
             SuccessFilesList.Add(ExcelFilePath);
             doc.close();
@@ -356,6 +358,11 @@ bool SExcelImporterWidget::ConvertMultipleExcelToCPP(TArray<TSharedPtr<FExcelFil
             UE_LOG(LogTemp, Error, TEXT("An error occurred while processing the Excel file."), *FString(ex.what()));
         }
     }
+
+    // 현재 프로젝트의 플러그인 폴더 경로
+    FString PluginDir = FPaths::ProjectPluginsDir();
+    FString FilePath = PluginDir / TEXT("ExcelImporter/Source/DataTableSubsystem/Public/EDataTable.h");
+    GenerateEnumHeader(FilePath, EnumStrs);
 
     FText SuccessFilesText;
     FText FailureFilesText;
@@ -471,6 +478,79 @@ FString SExcelImporterWidget::GenerateCPPCode(
 
     GeneratedCode += "};\n";
     return GeneratedCode;
+}
+
+// 여러 enum 항목을 파일에 추가하는 함수
+void SExcelImporterWidget::GenerateEnumHeader(const FString& FilePath, const TArray<FString>& EnumStrs)
+{
+    // 1. 파일 읽기
+    FString FileContent;
+    TArray<FString> NewEntries;
+
+    // 파일이 존재하는지 확인
+    if (FPaths::FileExists(FilePath))
+    {
+        if (!FFileHelper::LoadFileToString(FileContent, *FilePath))
+        {
+            UE_LOG(LogTemp, Error, TEXT("SExcelImporterWidget::GenerateEnumHeader Failed to load file: %s"), *FilePath);
+            return;
+        }
+
+        // 파일 내에 enum 항목이 존재하는지 확인하고, 존재하지 않는 항목만 NewEntries에 추가
+        for (const FString& EnumEntry : EnumStrs)
+        {
+            if (!FileContent.Contains(EnumEntry))  // 이미 있는지 확인
+            {
+                NewEntries.Add(EnumEntry);  // 정의되지 않은 항목만 추가
+            }
+            else
+            {
+                UE_LOG(LogTemp, Log, TEXT("SExcelImporterWidget::GenerateEnumHeader Enum entry %s already exists."), *EnumEntry);
+            }
+        }
+    }
+    else
+    {
+        // 파일이 없으면 모든 항목을 새로 추가할 목록에 넣음
+        NewEntries = EnumStrs;
+    }
+
+    // 2. 추가할 항목이 없으면 종료
+    if (NewEntries.Num() == 0)
+    {
+        UE_LOG(LogTemp, Log, TEXT("SExcelImporterWidget::GenerateEnumHeader No new enum entries to add."));
+        return;
+    }
+
+    // 3. Max 위에 enum 추가하기 위해 Max 의 라인 찾기
+    int32 MaxIndex = FileContent.Find(TEXT("Max"), ESearchCase::IgnoreCase, ESearchDir::FromStart);
+
+    // 4. 새로 추가할 항목들에 UMETA 추가
+    for (FString& EnumEntry : NewEntries)
+    {
+        FString DisplayName = EnumEntry;
+        EnumEntry = FString::Printf(TEXT("%s UMETA(DisplayName = \"%s\"),"), *EnumEntry, *DisplayName);
+    }
+
+    // 5. Max 항목 위에 새로운 enum 항목들 추가
+    if (MaxIndex != INDEX_NONE)
+    {
+        FileContent.InsertAt(MaxIndex, FString::Join(NewEntries, TEXT("\n")) + TEXT("\n\t"));
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("SExcelImporterWidget::GenerateEnumHeader Failed to find 'Max' enum entry."));
+        return;
+    }
+
+    // 6. 파일을 UTF-8로 저장
+    if (!FFileHelper::SaveStringToFile(FileContent, *FilePath, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
+    {
+        UE_LOG(LogTemp, Error, TEXT("SExcelImporterWidget::GenerateEnumHeader Failed to save file: %s"), *FilePath);
+        return;
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("SExcelImporterWidget::GenerateEnumHeader Enum entries were successfully added to the file."));
 }
 
 bool SExcelImporterWidget::CreateDataTable(const TArray<FString>& ExcelPaths, const TArray<FString>& SheetNames, TArray<FString>& GeneratedCodePaths, const TArray<FString>& DataTablePaths)
@@ -639,25 +719,7 @@ bool SExcelImporterWidget::CreateDataTableFromExcel(const FString& ExcelFilePath
             *NewDataTable->GetName(), 
             EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
 
-        if (NewDataTable)
-        {
-            // 패키지에 포함된 모든 객체들을 언로드
-            UPackage* Package = NewDataTable->GetOutermost();
-            if (Package)
-            {
-                // 패키지를 메모리에서 언로드 (아직 레퍼런스가 있다면 실패할 수 있음)
-                TArray<UPackage*> PackagesToUnload = { Package };
-                PackageTools::UnloadPackages(PackagesToUnload);
-
-                // 가비지 컬렉션 강제 호출
-                CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
-            }
-        }
-
         //// 패키지 저장 후 참조 해제 및 가비지 컬렉션 실행
-        NewDataTable->ClearFlags(RF_Public | RF_Standalone);
-        NewDataTable = nullptr; // 참조 해제
-
         if (RowStruct)
         {
             // 패키지에 포함된 모든 객체들을 언로드
@@ -672,9 +734,24 @@ bool SExcelImporterWidget::CreateDataTableFromExcel(const FString& ExcelFilePath
                 CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
             }
         }
-        
-        //// 패키지 저장 후 참조 해제 및 가비지 컬렉션 실행
         RowStruct = nullptr; // 참조 해제
+
+        if (NewDataTable)
+        {
+            // 패키지에 포함된 모든 객체들을 언로드
+            UPackage* Package = NewDataTable->GetOutermost();
+            if (Package)
+            {
+                // 패키지를 메모리에서 언로드 (아직 레퍼런스가 있다면 실패할 수 있음)
+                TArray<UPackage*> PackagesToUnload = { Package };
+                PackageTools::UnloadPackages(PackagesToUnload);
+
+                // 가비지 컬렉션 강제 호출
+                CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
+            }
+        }        
+        NewDataTable->ClearFlags(RF_Public | RF_Standalone);
+        NewDataTable = nullptr; // 참조 해제
 
         doc.close();
         return true;

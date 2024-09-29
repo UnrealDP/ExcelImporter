@@ -1,0 +1,5 @@
+---,ExcelFilePath,SheetName,GeneratedCodePath,DataTablePath,StructPrefix,InheritedDataStruct
+Sample1,"../Plugins\ExcelImporter\Content\Sample\Excel/Sample1.xlsx","Sample","../Plugins\ExcelImporter\Source\ExcelImporterEditor\Public\GenerateDataTableHeader/Sample1","../Plugins\ExcelImporter\Content\Sample\DataTable","F","/Script/Engine.TableRowBase"
+Skill,"../Plugins\ShowActionSystem\Content\SampleData\Excel/Skill.xlsx","Skill","../Plugins\ShowActionSystem\Source\ShowActionSystem\Public\Data/SkillData","../Plugins\ShowActionSystem\Content\SampleData\DataTable","F","/Script/ShowActionSystem.ActionBaseData"
+SkillShow,"../Plugins\ShowActionSystem\Content\SampleData\Excel/SkillShow.xlsx","SkillShow","../Plugins\ShowActionSystem\Source\ShowActionSystem\Public\Data/SkillShowData","../Plugins\ShowActionSystem\Content\SampleData\DataTable","F","/Script/ShowActionSystem.ActionBaseShowData"
+Effect,"../Plugins\ShowActionSystem\Content\SampleData\Excel/Effect.xlsx","Effect","../Plugins\ShowActionSystem\Source\ShowActionSystem\Public\Data/EffectData","../Plugins\ShowActionSystem\Content\SampleData\DataTable","F","/Script/ShowActionSystem.ActionEffectBaseData"

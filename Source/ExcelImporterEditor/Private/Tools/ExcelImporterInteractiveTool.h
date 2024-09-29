@@ -12,7 +12,7 @@
  * Builder for UExcelImporterInteractiveTool
  */
 UCLASS()
-class EXCELIMPORTER_API UExcelImporterInteractiveToolBuilder : public UInteractiveToolBuilder
+class EXCELIMPORTEREDITOR_API UExcelImporterInteractiveToolBuilder : public UInteractiveToolBuilder
 {
 	GENERATED_BODY()
 
@@ -26,7 +26,7 @@ public:
  * Property set for the UExcelImporterInteractiveTool
  */
 UCLASS(Transient)
-class EXCELIMPORTER_API UExcelImporterInteractiveToolProperties : public UInteractiveToolPropertySet
+class EXCELIMPORTEREDITOR_API UExcelImporterInteractiveToolProperties : public UInteractiveToolPropertySet
 {
 	GENERATED_BODY()
 
@@ -54,7 +54,7 @@ public:
  * the second point is set by shift-click-dragging the mouse.
  */
 UCLASS()
-class EXCELIMPORTER_API UExcelImporterInteractiveTool : public UInteractiveTool, public IClickDragBehaviorTarget
+class EXCELIMPORTEREDITOR_API UExcelImporterInteractiveTool : public UInteractiveTool, public IClickDragBehaviorTarget
 {
 	GENERATED_BODY()
 

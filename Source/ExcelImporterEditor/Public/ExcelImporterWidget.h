@@ -70,6 +70,7 @@ private:
 
     bool ConvertMultipleExcelToCPP(TArray<TSharedPtr<FExcelFileItem>>& ExcelFileItems);
     FString GenerateCPPCode(const FString& FileName, const FString& StructPrefix, const TSoftObjectPtr<UScriptStruct> Inherited, const TArray<FString>& VariableNames, const TArray<FString>& DataTypes);
+    void GenerateEnumHeader(const FString& FilePath, const TArray<FString>& EnumStrs);
 
     bool CreateDataTable(const TArray<FString>& ExcelPaths, const TArray<FString>& SheetNames, TArray<FString>& GeneratedCodePaths, const TArray<FString>& DataTablePaths);
     bool CreateDataTableFromExcel(const FString& ExcelFilePath, const FString& SheetName, const FString& GeneratedCodePath, const FString& DataTablePath);

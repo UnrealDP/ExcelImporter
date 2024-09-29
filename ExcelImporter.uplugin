@@ -16,9 +16,14 @@
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "ExcelImporter",
+			"Name": "ExcelImporterEditor",
 			"Type": "Editor",
 			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "DataTableSubsystem",
+			"Type": "Runtime",
+			"loadingPhase": "Default"
 		}
 	],
 	"Plugins": [
@@ -29,6 +34,10 @@
 		{
 			"Name": "EditorPackageUtils",
 			"Enabled": true
-		}
+		},
+		{
+			"Name": "CoreUtils",
+			"Enabled": true
+		}		
 	]
 }

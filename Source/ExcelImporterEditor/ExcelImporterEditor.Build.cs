@@ -6,24 +6,24 @@ using System.Data;
 using UnrealBuildBase;
 using UnrealBuildTool.Rules;
 
-public class ExcelImporter : ModuleRules
+public class ExcelImporterEditor : ModuleRules
 {
-	public ExcelImporter(ReadOnlyTargetRules Target) : base(Target)
+	public ExcelImporterEditor(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 
         PublicIncludePaths.AddRange(
 			new string[] {
                 // ... add public include paths required here ...
-				"ExcelImporter/Public"
-            }
+				"ExcelImporterEditor/Public"
+			}
 			);
 
         PrivateIncludePaths.AddRange(
 			new string[] {
 				// ... add other private include paths required here ...
-				"ExcelImporter/Private"
-            }
+				"ExcelImporterEditor/Private"
+			}
 			);
 			
 		
@@ -61,6 +61,7 @@ public class ExcelImporter : ModuleRules
 
 				"SlateEditorUtils",
                 "EditorPackageUtils",
+                "DataTableSubsystem",
 				// ... add private dependencies that you statically link with here ...	
 			}
             );
