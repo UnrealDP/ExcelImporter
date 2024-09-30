@@ -38,6 +38,12 @@ public:
         return Get().GetData<T>(TableType, RowKey);
     }
 
+    template<typename T>
+    static T* Data(UDataTable* InDataTable, const FName& RowKey)
+    {
+        return Get().GetData<T>(InDataTable, RowKey);
+    }
+
 protected:
     DataTableManager() 
     {
@@ -84,6 +90,19 @@ protected:
 
         FString ContextString = GetContextString<T>();
         return DataTable->FindRow<T>(RowKey, ContextString, true);
+    }
+
+    template<typename T>
+    T* GetData(UDataTable* InDataTable, const FName& RowKey)
+    {
+        if (!InDataTable)
+        {
+            UE_LOG(LogTemp, Error, TEXT("DataTableManager::GetData InDataTable is invalid"));
+            return nullptr;
+        }
+
+        FString ContextString = GetContextString<T>();
+        return InDataTable->FindRow<T>(RowKey, ContextString, true);
     }
 
 private:
