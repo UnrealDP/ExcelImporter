@@ -1,3 +1,4 @@
+using System.IO;
 using UnrealBuildTool;
  
 public class DataTableSubsystem : ModuleRules
@@ -8,8 +9,14 @@ public class DataTableSubsystem : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine"});
  
-		PublicIncludePaths.AddRange(new string[] {"DataTableSubsystem/Public"});
-		PrivateIncludePaths.AddRange(new string[] {"DataTableSubsystem/Private"});
+		PublicIncludePaths.AddRange(new string[] 
+        {
+            Path.Combine(ModuleDirectory, "Public")
+        });
+		PrivateIncludePaths.AddRange(new string[] 
+        {
+            Path.Combine(ModuleDirectory, "Private")
+        });
 
         PrivateDependencyModuleNames.AddRange(
             new string[]

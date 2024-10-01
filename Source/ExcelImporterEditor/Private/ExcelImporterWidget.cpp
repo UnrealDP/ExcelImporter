@@ -528,13 +528,19 @@ void SExcelImporterWidget::GenerateEnumHeader(const FString& FilePath, const TAr
     // 4. 새로 추가할 항목들에 UMETA 추가
     for (FString& EnumEntry : NewEntries)
     {
-        FString DisplayName = EnumEntry;
-        EnumEntry = FString::Printf(TEXT("%s UMETA(DisplayName = \"%s\"),"), *EnumEntry, *DisplayName);
+        EnumEntry = FString::Printf(TEXT("\t%s UMETA(DisplayName = \"%s\"),"), *EnumEntry, *EnumEntry);
     }
 
     // 5. Max 항목 위에 새로운 enum 항목들 추가
     if (MaxIndex != INDEX_NONE)
     {
+        if (MaxIndex > 0 && FileContent[MaxIndex - 1] == '\t')
+        {
+            // '\t'를 제거
+            FileContent.RemoveAt(MaxIndex - 1, 1, false);
+            MaxIndex--;
+        }
+
         FileContent.InsertAt(MaxIndex, FString::Join(NewEntries, TEXT("\n")) + TEXT("\n\t"));
     }
     else
@@ -714,7 +720,7 @@ bool SExcelImporterWidget::CreateDataTableFromExcel(const FString& ExcelFilePath
 
         // 7. DataTable 어셋 저장
         //SaveDataTableAsset(NewDataTable, DataTablePath);
-        UPackage* SavedPackage = EditorPackageUtils::SaveAssetToPackage(
+        EditorPackageUtils::SaveAssetToPackage(
             NewDataTable, DataTablePath, 
             *NewDataTable->GetName(), 
             EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
@@ -729,9 +735,6 @@ bool SExcelImporterWidget::CreateDataTableFromExcel(const FString& ExcelFilePath
                 // 패키지를 메모리에서 언로드 (아직 레퍼런스가 있다면 실패할 수 있음)
                 TArray<UPackage*> PackagesToUnload = { Package };
                 PackageTools::UnloadPackages(PackagesToUnload);
-
-                // 가비지 컬렉션 강제 호출
-                CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
             }
         }
         RowStruct = nullptr; // 참조 해제
@@ -745,13 +748,13 @@ bool SExcelImporterWidget::CreateDataTableFromExcel(const FString& ExcelFilePath
                 // 패키지를 메모리에서 언로드 (아직 레퍼런스가 있다면 실패할 수 있음)
                 TArray<UPackage*> PackagesToUnload = { Package };
                 PackageTools::UnloadPackages(PackagesToUnload);
-
-                // 가비지 컬렉션 강제 호출
-                CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
             }
         }        
         NewDataTable->ClearFlags(RF_Public | RF_Standalone);
         NewDataTable = nullptr; // 참조 해제
+
+        // 가비지 컬렉션 강제 호출
+        CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
 
         doc.close();
         return true;
@@ -885,8 +888,6 @@ FTableRowBase* SExcelImporterWidget::CreateDataTableRowFromExcel(
     const OpenXLSX::XLWorksheet& wks, 
     int32 RowIndex)
 {
-    UE_LOG(LogTemp, Error, TEXT("################## %d"), VariableNames.Num());
-
     // 1. RowStruct의 크기만큼 메모리 할당 및 초기화
     FTableRowBase* NewRow = (FTableRowBase*)FMemory::Malloc(RowStruct->GetStructureSize());
     RowStruct->InitializeStruct(NewRow);
@@ -901,8 +902,6 @@ FTableRowBase* SExcelImporterWidget::CreateDataTableRowFromExcel(
         // VariableNames에서 FProperty와 일치하는 이름의 인덱스 찾기
         int32 MatchingIndex = VariableNames.IndexOfByKey(PropertyName);
 
-        UE_LOG(LogTemp, Error, TEXT("################## %s %d"), *PropertyName, MatchingIndex);
-
         // MatchingIndex == 0 -> 첫번째는 ID 임
         if (MatchingIndex == 0 || MatchingIndex == INDEX_NONE)
         {
@@ -912,7 +911,6 @@ FTableRowBase* SExcelImporterWidget::CreateDataTableRowFromExcel(
 
         // 엑셀 데이터 읽기
         FString CellValue = FString(wks.cell(RowIndex, MatchingIndex + 1).value().getString().c_str());
-        UE_LOG(LogTemp, Error, TEXT("################## --- %s %s"), *PropertyName, *CellValue);
 
         // 엑셀 데이터가 비어 있으면 건너뜀
         if (CellValue.IsEmpty())

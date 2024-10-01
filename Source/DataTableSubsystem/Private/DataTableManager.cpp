@@ -20,6 +20,14 @@ void DataTableManager::Destroy()
 {
     if (Instance)
     {
+        bool bIsInitDataTablePath = false;
+
+        // 데이터 테이블 경로를 저장하는 배열
+        TArray<FString> DataTablePaths;
+
+        // 로드된 데이터 테이블 배열
+        TArray<UDataTable*> DataTableArray;
+
         delete Instance;
         Instance = nullptr;
     }

@@ -9,5 +9,7 @@ UENUM(BlueprintType)
 enum class EDataTable : uint8
 {
 	SkillData UMETA(DisplayName = "SkillData"),
+	SkillShowData UMETA(DisplayName = "SkillShowData"),
+	EffectData UMETA(DisplayName = "EffectData"),
 	Max   UMETA(DisplayName = "Max Data")
 };
