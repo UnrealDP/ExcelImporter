@@ -22,14 +22,19 @@ void DataTableManager::Destroy()
     {
         bool bIsInitDataTablePath = false;
 
-        // 데이터 테이블 경로를 저장하는 배열
-        TArray<FString> DataTablePaths;
+        for (UDataTable*& data : Instance->DataTableArray)
+        {
+            data->RemoveFromRoot();
+            data = nullptr;
+        }
 
-        // 로드된 데이터 테이블 배열
-        TArray<UDataTable*> DataTableArray;
+        Instance->DataTablePaths.Empty();
+        Instance->DataTableArray.Empty();
 
         delete Instance;
         Instance = nullptr;
+
+        CollectGarbage(RF_NoFlags);
     }
 }
 
@@ -104,6 +109,20 @@ void DataTableManager::InitializeDataTables(const TArray<EDataTable>& PreloadTab
     }
 }
 
+// 데이터 테이블 로드한 것 릴리즈 하는 함수
+void DataTableManager::ReleaseDatas(const TArray<EDataTable>& PreloadTables)
+{
+    for (EDataTable TableType : PreloadTables)
+    {
+        if (DataTableArray[static_cast<int32>(TableType)])
+        {
+            DataTableArray[static_cast<int32>(TableType)]->RemoveFromRoot();
+            DataTableArray[static_cast<int32>(TableType)] = nullptr;
+        }
+    }
+    CollectGarbage(RF_NoFlags);
+}
+
 // 설정 테이블에서 DataTable 경로를 가져오는 함수
 FString DataTableManager::GetDataTablePath(EDataTable TableType)
 {
@@ -134,6 +153,8 @@ UDataTable* DataTableManager::LoadDataTable(EDataTable TableType)
     UDataTable* LoadedTable = LoadObject<UDataTable>(nullptr, *DataTablePath);
     if (LoadedTable)
     {
+        LoadedTable->AddToRoot();
+        DataTableArray[static_cast<int32>(TableType)] = nullptr;
         DataTableArray[static_cast<int32>(TableType)] = LoadedTable;
         UE_LOG(LogTemp, Log, TEXT("ataTableManager::LoadDataTable( Loaded DataTable: %s"), *DataTablePath);
     }
@@ -190,6 +211,7 @@ void DataTableManager::ResetLoadedDataTables()
     {
         if (DataTable)
         {
+            DataTable->RemoveFromRoot();
             DataTable = nullptr;
         }
     }

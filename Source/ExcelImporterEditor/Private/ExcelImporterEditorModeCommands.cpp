@@ -2,7 +2,6 @@
 
 #include "ExcelImporterEditorModeCommands.h"
 #include "ExcelImporterEditorMode.h"
-#include "EditorStyleSet.h"
 
 #define LOCTEXT_NAMESPACE "ExcelImporterEditorModeCommands"
 
@@ -10,7 +9,7 @@ FExcelImporterEditorModeCommands::FExcelImporterEditorModeCommands()
 	: TCommands<FExcelImporterEditorModeCommands>("ExcelImporterEditorMode",
 		NSLOCTEXT("ExcelImporterEditorMode", "ExcelImporterEditorModeCommands", "ExcelImporter Editor Mode"),
 		NAME_None,
-		FEditorStyle::GetStyleSetName())
+		FAppStyle::GetAppStyleSetName())
 {
 }
 

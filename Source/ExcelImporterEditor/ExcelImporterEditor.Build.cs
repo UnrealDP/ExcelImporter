@@ -47,7 +47,6 @@ public class ExcelImporterEditor : ModuleRules
 				"SlateCore",
 				"InputCore",
 				"EditorFramework",
-				"EditorStyle",
 				"UnrealEd",
 				"LevelEditor",
 				"InteractiveToolsFramework",

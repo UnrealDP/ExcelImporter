@@ -28,8 +28,6 @@ FString UExcelImporterEditorMode::InteractiveToolName = TEXT("ExcelImporter_Meas
 
 UExcelImporterEditorMode::UExcelImporterEditorMode()
 {
-	FModuleManager::Get().LoadModule("EditorStyle");
-
 	// appearance and icon in the editing mode ribbon can be customized here
 	Info = FEditorModeInfo(UExcelImporterEditorMode::EM_ExcelImporterEditorModeId,
 		LOCTEXT("ModeName", "ExcelImporter"),

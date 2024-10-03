@@ -20,6 +20,7 @@
 #include "Interfaces/IPluginManager.h"
 #include "PackageTools.h"
 #include "ObjectTools.h"
+#include "UObject/SavePackage.h"
  
 void SExcelImporterWidget::Construct(const FArguments& InArgs)
 {
@@ -1039,7 +1040,13 @@ void SExcelImporterWidget::SaveDataTableAsset(UDataTable* DataTable, const FStri
     DataTable->MarkPackageDirty();
 
     // -- 패키지 저장 처리
-    bool bSaved = UPackage::SavePackage(ExistingPackage, DataTable, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *FilePath);
+    FSavePackageArgs SaveArgs;
+    SaveArgs.TopLevelFlags = EObjectFlags::RF_Public | EObjectFlags::RF_Standalone;
+    SaveArgs.Error = GError;
+    SaveArgs.SaveFlags = SAVE_None;
+    SaveArgs.bForceByteSwapping = false;
+    SaveArgs.bWarnOfLongFilename = true;
+    bool bSaved = UPackage::SavePackage(ExistingPackage, DataTable, *FilePath, SaveArgs);
 
     if (!bSaved)
     {

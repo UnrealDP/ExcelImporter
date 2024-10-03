@@ -123,6 +123,7 @@ public:
 
     // 데이터 테이블 초기화 함수 (미리 로드할 enum 리스트를 받음)
     void InitializeDataTables(const TArray<EDataTable>& PreloadTables);
+    void ReleaseDatas(const TArray<EDataTable>& PreloadTables);
 
     UDataTable* GetDataTable(EDataTable TableType);
 
