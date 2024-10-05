@@ -20,6 +20,10 @@ private:
     static DataTableManager* Instance;
 
 public:
+    static bool IsInitialized()
+	{
+		return Instance != nullptr;
+	}
     static DataTableManager& Get();
     static void Destroy();
 
@@ -31,7 +35,20 @@ public:
     {
         return Get().GetDataTable(TableType);
     }
+    template<typename T>
+    static UDataTable* DataTable()
+    {
+        EDataTable TableType = TypeIndex<T>::Gettype();
+        return Get().GetDataTable(TableType);
+    }
 
+    template<typename T>
+    static T* Data(const FName& RowKey)
+    {
+        return Get().GetData<T>(RowKey);
+    }
+
+    // 상속 받은 데이터의 경우 실제 데이터 enum을 넘겨주고 캐스팅은 부모로 가능한 함수
     template<typename T>
     static T* Data(EDataTable TableType, const FName& RowKey)
     {
@@ -79,17 +96,16 @@ protected:
     }
 
     template<typename T>
-    T* GetData(EDataTable TableType, const FName& RowKey)
+    T* GetData(const FName& RowKey)
     {
-        UDataTable* DataTable = GetDataTable(TableType);
-        if (!DataTable)
-		{
-            UE_LOG(LogTemp, Error, TEXT("DataTableManager::GetData DataTable is invalid %d"), static_cast<int32>(TableType));
-			return nullptr;
-		}
+        EDataTable TableType = TypeIndex<T>::GetType();
+        if (TableType == EDataTable::Max)
+        {
+            UE_LOG(LogTemp, Error, TEXT("DataTableManager::GetData TableType is invalid [ %d ]"), static_cast<int32>(TableType));
+            return nullptr;
+        }
 
-        FString ContextString = GetContextString<T>();
-        return DataTable->FindRow<T>(RowKey, ContextString, true);
+        return GetData<T>(TableType, RowKey);
     }
 
     template<typename T>
@@ -103,6 +119,19 @@ protected:
 
         FString ContextString = GetContextString<T>();
         return InDataTable->FindRow<T>(RowKey, ContextString, true);
+    }
+
+    template<typename T>
+    T* GetData(EDataTable TableType, const FName& RowKey)
+    {
+        UDataTable* DataTable = GetDataTable(TableType);
+        if (!DataTable)
+        {
+            UE_LOG(LogTemp, Error, TEXT("DataTableManager::GetData DataTable is invalid %d"), static_cast<int32>(TableType));
+            return nullptr;
+        }
+
+        return GetData<T>(DataTable, RowKey);
     }
 
 private:

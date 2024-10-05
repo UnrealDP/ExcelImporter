@@ -24,7 +24,15 @@ void DataTableManager::Destroy()
 
         for (UDataTable*& data : Instance->DataTableArray)
         {
-            data->RemoveFromRoot();
+            if (!data)
+			{
+				continue;
+			}
+
+            if (IsValid(data))
+            {
+				data->RemoveFromRoot();
+			}
             data = nullptr;
         }
 
@@ -114,10 +122,20 @@ void DataTableManager::ReleaseDatas(const TArray<EDataTable>& PreloadTables)
 {
     for (EDataTable TableType : PreloadTables)
     {
-        if (DataTableArray[static_cast<int32>(TableType)])
+        UDataTable* DataTable = DataTableArray[static_cast<int32>(TableType)];
+        if (!DataTable)
+		{
+			continue;
+		}
+
+        if (IsValid(DataTable))  // 유효성 검사 추가
         {
-            DataTableArray[static_cast<int32>(TableType)]->RemoveFromRoot();
-            DataTableArray[static_cast<int32>(TableType)] = nullptr;
+            DataTable->RemoveFromRoot();  // 루트에서 제거
+            DataTableArray[static_cast<int32>(TableType)] = nullptr;  // 배열에서 제거
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("DataTable at index %d is already invalid or nullptr"), static_cast<int32>(TableType));
         }
     }
     CollectGarbage(RF_NoFlags);
@@ -203,6 +221,7 @@ UDataTable* DataTableManager::GetDataTable(EDataTable TableType)
     return DataTableArray[static_cast<int32>(TableType)];
 }
 
+
 void DataTableManager::ResetLoadedDataTables()
 {
     DataTablePaths.Reset();
@@ -211,7 +230,11 @@ void DataTableManager::ResetLoadedDataTables()
     {
         if (DataTable)
         {
-            DataTable->RemoveFromRoot();
+            if (IsValid(DataTable))
+            {
+                DataTable->RemoveFromRoot();
+            }
+           
             DataTable = nullptr;
         }
     }

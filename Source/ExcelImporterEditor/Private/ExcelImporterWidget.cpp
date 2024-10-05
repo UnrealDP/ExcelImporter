@@ -421,6 +421,7 @@ FString SExcelImporterWidget::GenerateCPPCode(
     FString GeneratedCode = "#pragma once\n\n";
     GeneratedCode += "#include \"CoreMinimal.h\"\n";    
     GeneratedCode += "#include \"Engine/DataTable.h\"\n";
+    GeneratedCode += "#include \"EDataTable.h\"\n";
 
     // Include 경로 추가 - Inherited 구조체 경로 파악
     if (Inherited.IsValid())
@@ -434,8 +435,10 @@ FString SExcelImporterWidget::GenerateCPPCode(
 
         GeneratedCode += FString::Printf(TEXT("#include \"%s\"\n"), *IncludePath);
     }
-
     GeneratedCode += FString::Printf(TEXT("#include \"%s.generated.h\"\n\n"), *FileName);
+
+    GeneratedCode += FString::Printf(TEXT("DATATABLE_TYPE_INDEX(F%s, EDataTable::%s)\n\n"), *FileName, *FileName);
+
     GeneratedCode += "USTRUCT(BlueprintType)\n";
     GeneratedCode += FString::Printf(TEXT("struct F%s : public %s%s\n"), *FileName, *StructPrefix, *Inherited.Get()->GetName());
     GeneratedCode += "{\n";
