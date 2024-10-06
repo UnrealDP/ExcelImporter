@@ -8,6 +8,7 @@
 
 /**
  * 데이터 테이블 관리 클래스
+ * 시험적으로 싱글턴으로 만든다. 전체 게임 구조에 따라서 EnginSubsystem or GameInstance 등으로 변경한다.
  * 데이터 테이블은 보통 게임 시작시 로드하고 쭉 사용하기 때문에 따로 데이터 unload 같은건 안만들었음
  * 혹시 나중에 자주 사용하지 않는 데이터는 레퍼런스 관리 같은거 할거라면 수정이 필요함
  * unload 가 없다고 가정하고 TArray<UDataTable*> DataTableArray 로 관리함
