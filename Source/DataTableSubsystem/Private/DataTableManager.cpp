@@ -41,8 +41,6 @@ void DataTableManager::Destroy()
 
         delete Instance;
         Instance = nullptr;
-
-        CollectGarbage(RF_NoFlags);
     }
 }
 
@@ -138,7 +136,6 @@ void DataTableManager::ReleaseDatas(const TArray<EDataTable>& PreloadTables)
             UE_LOG(LogTemp, Warning, TEXT("DataTable at index %d is already invalid or nullptr"), static_cast<int32>(TableType));
         }
     }
-    CollectGarbage(RF_NoFlags);
 }
 
 // 설정 테이블에서 DataTable 경로를 가져오는 함수
@@ -238,7 +235,6 @@ void DataTableManager::ResetLoadedDataTables()
             DataTable = nullptr;
         }
     }
-    CollectGarbage(RF_NoFlags);
     DataTableArray.Reset();
 
     bIsInitDataTablePath = false;
