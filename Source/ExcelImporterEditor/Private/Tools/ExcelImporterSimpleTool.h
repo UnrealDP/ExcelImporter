@@ -63,7 +63,7 @@ public:
 
 protected:
 	UPROPERTY()
-	TObjectPtr<UExcelImporterSimpleToolProperties> Properties;
+	TObjectPtr<UExcelImporterSimpleToolProperties> Properties = nullptr;
 
 
 protected:
