@@ -43,7 +43,7 @@ UExcelImporterInteractiveToolProperties::UExcelImporterInteractiveToolProperties
 void UExcelImporterInteractiveTool::SetWorld(UWorld* World)
 {
 	check(World);
-	this->TargetWorld = World;
+	TargetWorld = World;
 }
 
 
