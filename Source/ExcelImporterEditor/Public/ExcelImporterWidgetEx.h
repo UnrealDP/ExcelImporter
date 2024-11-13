@@ -4,12 +4,16 @@
 #include "Widgets/SCompoundWidget.h"
 #include "ExcelImportSettings.h"
 
+// TODO: (DIPI) 액셀에서 struct, Array 등의 자료형을 사용할 수 있게 만들기위해 빼논 코드
+// 기존 코드 복사해서 클래스만 들들어두고 아직 미구현
+// 실제 사용할 디자이너와 협의가 필요해서 우선 중단하고 추후 작업
+
 namespace OpenXLSX {
     class XLWorksheet;  // XLWorksheet sms OpenXLSX 네임스페이스
 }
 
 
-class SExcelImporterWidget2 : public SCompoundWidget
+class SExcelImporterWidgetEx : public SCompoundWidget
 {
     struct FImportStruct
     {
@@ -56,7 +60,7 @@ class SExcelImporterWidget2 : public SCompoundWidget
 
 
 public:
-    SLATE_BEGIN_ARGS(SExcelImporterWidget2) {}
+    SLATE_BEGIN_ARGS(SExcelImporterWidgetEx) {}
     SLATE_END_ARGS()
 
     void Construct(const FArguments& InArgs);
@@ -76,25 +80,28 @@ private:
     void OnCheckBoxStateChanged(ECheckBoxState NewState, TSharedPtr<FExcelFileItem> InItem);
     void OnFileCheckboxChanged(ECheckBoxState NewState, TSharedPtr<FString> FileName);
 
-    bool ConvertMultipleExcelToCPP(TArray<TSharedPtr<FExcelFileItem>>& ExcelFileItems);
-    FString GenerateCPPCode(
+    static bool ConvertMultipleExcelToCPP(UDataTable* InDataTypeSettingsDataTable, TArray<TSharedPtr<FExcelFileItem>>& ExcelFileItems);
+    static FString GenerateCPPCode(
+        UDataTable* InDataTypeSettingsDataTable,
         const FString& StructName, 
         const FString& StructPrefix, 
         const TSoftObjectPtr<UScriptStruct> Inherited, 
         const TArray<FString>& VariableNames, 
         const TArray<FString>& DataTypes, 
         const TArray<FImportStruct>& Structs);
-    FString GenerateFieldCPPCode(
+    static FString GenerateFieldCPPCode(
+        UDataTable* InDataTypeSettingsDataTable,
         const TSoftObjectPtr<UScriptStruct> Inherited,
         const TArray<FString>& VariableNames,
         const TArray<FString>& DataTypes);
-    FString GenerateCPPStructCode(
+    static FString GenerateCPPStructCode(
+        UDataTable* InDataTypeSettingsDataTable,
         const FString& StructName,
         const FString& StructPrefix, 
         const TSoftObjectPtr<UScriptStruct> Inherited, 
         const TArray<FString>& VariableNames, 
         const TArray<FString>& DataTypes);
-    void GenerateEnumHeader(const FString& FilePath, const TArray<FString>& EnumStrs);
+    static void GenerateEnumHeader(const FString& FilePath, const TArray<FString>& EnumStrs);
 
     bool CreateDataTable(const TArray<FString>& ExcelPaths, const TArray<FString>& SheetNames, TArray<FString>& GeneratedCodePaths, const TArray<FString>& DataTablePaths);
     bool CreateDataTableFromExcel(const FString& ExcelFilePath, const FString& SheetName, const FString& GeneratedCodePath, const FString& DataTablePath);

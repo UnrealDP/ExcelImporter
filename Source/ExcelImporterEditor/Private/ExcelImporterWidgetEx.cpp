@@ -1,4 +1,4 @@
-#include "ExcelImporterWidget2.h"
+#include "ExcelImporterWidgetEx.h"
 #include "ExcelImportSettings.h"
 #include "SlateOptMacros.h"
 #include "SlateEditorUtils.h"
@@ -22,7 +22,7 @@
 #include "ObjectTools.h"
 #include "UObject/SavePackage.h"
  
-void SExcelImporterWidget2::Construct(const FArguments& InArgs)
+void SExcelImporterWidgetEx::Construct(const FArguments& InArgs)
 {
     LoadData();
     LoadExcelFiles();
@@ -44,14 +44,14 @@ void SExcelImporterWidget2::Construct(const FArguments& InArgs)
                         .AutoWidth()
                         [
                             SlateEditorUtils::CreateButtonWithText(FText::FromString(TEXT("Select All")),
-                                FOnClicked::CreateSP(this, &SExcelImporterWidget2::OnSelectAllButtonClicked))  // Select All 버튼 클릭 함수
+                                FOnClicked::CreateSP(this, &SExcelImporterWidgetEx::OnSelectAllButtonClicked))  // Select All 버튼 클릭 함수
                         ]
 
                         + SHorizontalBox::Slot()
                         .AutoWidth()
                         [
                             SlateEditorUtils::CreateButtonWithText(FText::FromString(TEXT("UnSelect All")),
-                                FOnClicked::CreateSP(this, &SExcelImporterWidget2::OnUnSelectAllButtonClicked))  // UnSelect All 버튼 클릭 함수
+                                FOnClicked::CreateSP(this, &SExcelImporterWidgetEx::OnUnSelectAllButtonClicked))  // UnSelect All 버튼 클릭 함수
                         ]
                 ]
 
@@ -60,7 +60,7 @@ void SExcelImporterWidget2::Construct(const FArguments& InArgs)
                 [
                     SAssignNew(ExcelListView, SListView<TSharedPtr<FExcelFileItem>>)  // SListView 인스턴스 생성 및 초기화
                         .ListItemsSource(&ExcelFiles)
-                        .OnGenerateRow(this, &SExcelImporterWidget2::GenerateFileRow)
+                        .OnGenerateRow(this, &SExcelImporterWidgetEx::GenerateFileRow)
                 ]
                 + SVerticalBox::Slot()
                 .AutoHeight()
@@ -68,31 +68,31 @@ void SExcelImporterWidget2::Construct(const FArguments& InArgs)
                     SNew(STextBlock)
                         .Text(ErrorMessage)
                         .ColorAndOpacity(FLinearColor::Red)
-                        .Visibility(this, &SExcelImporterWidget2::GetErrorMessageVisibility)
+                        .Visibility(this, &SExcelImporterWidgetEx::GetErrorMessageVisibility)
                 ]
 
                 + SVerticalBox::Slot()
                 .AutoHeight()
                 [
                     SlateEditorUtils::CreateButtonWithText(FText::FromString(TEXT("Generated Selected to C++ Header")),
-                        FOnClicked::CreateSP(this, &SExcelImporterWidget2::OnGeneratedClicked))
+                        FOnClicked::CreateSP(this, &SExcelImporterWidgetEx::OnGeneratedClicked))
                 ]
 
                 + SVerticalBox::Slot()
                 .AutoHeight()
                 [
                     SlateEditorUtils::CreateButtonWithText(FText::FromString(TEXT("Create DataTable")),
-                        FOnClicked::CreateSP(this, &SExcelImporterWidget2::OnCreateDataTableClicked))
+                        FOnClicked::CreateSP(this, &SExcelImporterWidgetEx::OnCreateDataTableClicked))
                 ]
         ];
 }
 
-EVisibility SExcelImporterWidget2::GetErrorMessageVisibility() const
+EVisibility SExcelImporterWidgetEx::GetErrorMessageVisibility() const
 {
     return ErrorMessage.IsEmpty() ? EVisibility::Collapsed : EVisibility::Visible;
 }
 
-void SExcelImporterWidget2::LoadData()
+void SExcelImporterWidgetEx::LoadData()
 {
     FString ExcelImportSettingsPath = TEXT("/ExcelImporter/DT_ExcelImportSettings");
     ExcelImportSettingsDataTable = LoadObject<UDataTable>(nullptr, *ExcelImportSettingsPath);
@@ -102,7 +102,7 @@ void SExcelImporterWidget2::LoadData()
 }
 
 // ExcelImportSettingsDataTable 에 입력한 액셀 파일 있는지 확인하고 액셀 리스트를 뽑음
-void SExcelImporterWidget2::LoadExcelFiles()
+void SExcelImporterWidgetEx::LoadExcelFiles()
 {
     if (ExcelImportSettingsDataTable == nullptr)
     {
@@ -152,7 +152,7 @@ void SExcelImporterWidget2::LoadExcelFiles()
     }
 }
 
-TSharedRef<ITableRow> SExcelImporterWidget2::GenerateFileRow(TSharedPtr<FExcelFileItem> InItem, const TSharedRef<STableViewBase>& OwnerTable)
+TSharedRef<ITableRow> SExcelImporterWidgetEx::GenerateFileRow(TSharedPtr<FExcelFileItem> InItem, const TSharedRef<STableViewBase>& OwnerTable)
 {
     return SNew(STableRow<TSharedPtr<FExcelFileItem>>, OwnerTable)
         [
@@ -162,8 +162,8 @@ TSharedRef<ITableRow> SExcelImporterWidget2::GenerateFileRow(TSharedPtr<FExcelFi
                 .AutoWidth()
                 [
                     SNew(SCheckBox)
-                        .IsChecked(this, &SExcelImporterWidget2::GetCheckBoxState, InItem)  // 체크 상태 처리 함수
-                        .OnCheckStateChanged(this, &SExcelImporterWidget2::OnCheckBoxStateChanged, InItem)  // 체크 상태 변경 함수
+                        .IsChecked(this, &SExcelImporterWidgetEx::GetCheckBoxState, InItem)  // 체크 상태 처리 함수
+                        .OnCheckStateChanged(this, &SExcelImporterWidgetEx::OnCheckBoxStateChanged, InItem)  // 체크 상태 변경 함수
                 ]
 
                 + SHorizontalBox::Slot()
@@ -175,22 +175,22 @@ TSharedRef<ITableRow> SExcelImporterWidget2::GenerateFileRow(TSharedPtr<FExcelFi
         ];
 }
 
-ECheckBoxState SExcelImporterWidget2::GetCheckBoxState(TSharedPtr<FExcelFileItem> InItem) const
+ECheckBoxState SExcelImporterWidgetEx::GetCheckBoxState(TSharedPtr<FExcelFileItem> InItem) const
 {
     return InItem->bIsChecked ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
 }
 
-void SExcelImporterWidget2::OnCheckBoxStateChanged(ECheckBoxState NewState, TSharedPtr<FExcelFileItem> InItem)
+void SExcelImporterWidgetEx::OnCheckBoxStateChanged(ECheckBoxState NewState, TSharedPtr<FExcelFileItem> InItem)
 {
     InItem->bIsChecked = (NewState == ECheckBoxState::Checked);
 }
 
 
-void SExcelImporterWidget2::OnFileCheckboxChanged(ECheckBoxState NewState, TSharedPtr<FString> FileName)
+void SExcelImporterWidgetEx::OnFileCheckboxChanged(ECheckBoxState NewState, TSharedPtr<FString> FileName)
 {
 }
 
-FReply SExcelImporterWidget2::OnGeneratedClicked()
+FReply SExcelImporterWidgetEx::OnGeneratedClicked()
 {
     // 체크된 파일 목록
     TArray<TSharedPtr<FExcelFileItem>> ExcelFileItems;
@@ -209,7 +209,7 @@ FReply SExcelImporterWidget2::OnGeneratedClicked()
     }
 
     // 이제 ExcelPaths와 OutputPaths를 ConvertMultipleExcelToCPP 함수로 넘길 수 있음
-    if (ConvertMultipleExcelToCPP(ExcelFileItems))
+    if (ConvertMultipleExcelToCPP(DataTypeSettingsDataTable, ExcelFileItems))
     {
         //UE_LOG(LogTemp, Log, TEXT("Excel to CPP 변환 성공"));
     }
@@ -221,7 +221,7 @@ FReply SExcelImporterWidget2::OnGeneratedClicked()
     return FReply::Handled();
 }
 
-FReply SExcelImporterWidget2::OnCreateDataTableClicked()
+FReply SExcelImporterWidgetEx::OnCreateDataTableClicked()
 {
     // 체크된 파일 목록
     TArray<TSharedPtr<FExcelFileItem>> FilesToConvert;
@@ -270,7 +270,7 @@ FReply SExcelImporterWidget2::OnCreateDataTableClicked()
     return FReply::Handled();
 }
 
-FReply SExcelImporterWidget2::OnSelectAllButtonClicked()
+FReply SExcelImporterWidgetEx::OnSelectAllButtonClicked()
 {
     // 모든 파일의 체크 상태를 선택
     for (TSharedPtr<FExcelFileItem>& Item : ExcelFiles)
@@ -282,7 +282,7 @@ FReply SExcelImporterWidget2::OnSelectAllButtonClicked()
     return FReply::Handled();  // 버튼 클릭을 처리했다고 반환
 }
 
-FReply SExcelImporterWidget2::OnUnSelectAllButtonClicked()
+FReply SExcelImporterWidgetEx::OnUnSelectAllButtonClicked()
 {
     // 모든 파일의 체크 상태를 해제
     for (TSharedPtr<FExcelFileItem>& Item : ExcelFiles)
@@ -295,7 +295,7 @@ FReply SExcelImporterWidget2::OnUnSelectAllButtonClicked()
 }
 
 // Excel 파일을 읽고 C++ 코드 생성
-bool SExcelImporterWidget2::ConvertMultipleExcelToCPP(TArray<TSharedPtr<FExcelFileItem>>& ExcelFileItems)
+bool SExcelImporterWidgetEx::ConvertMultipleExcelToCPP(UDataTable* InDataTypeSettingsDataTable, TArray<TSharedPtr<FExcelFileItem>>& ExcelFileItems)
 {
     TArray<FString> SuccessFilesList;
     TArray<FString> FailureFilesList;
@@ -360,8 +360,8 @@ bool SExcelImporterWidget2::ConvertMultipleExcelToCPP(TArray<TSharedPtr<FExcelFi
                 int FIdx = ParsedArray.Find(TEXT("S"));
                 if (FIdx >= 0)
                 {
-                    checkf(ParsedArray.Num() >= 4, TEXT("SExcelImporterWidget2::ConvertMultipleExcelToCPP Invalid struct type format."));
-                    checkf(StructVariableName.IsEmpty(), TEXT("SExcelImporterWidget2::ConvertMultipleExcelToCPP StructVariableName is Empty."));
+                    checkf(ParsedArray.Num() >= 4, TEXT("SExcelImporterWidgetEx::ConvertMultipleExcelToCPP Invalid struct type format."));
+                    checkf(StructVariableName.IsEmpty(), TEXT("SExcelImporterWidgetEx::ConvertMultipleExcelToCPP StructVariableName is Empty."));
 
                     for (int32 SIdx = 0; i < ParsedArray.Num(); SIdx++)
                     {
@@ -422,7 +422,7 @@ bool SExcelImporterWidget2::ConvertMultipleExcelToCPP(TArray<TSharedPtr<FExcelFi
             // C++ 코드 생성
             FString BaseFileName = FPaths::GetBaseFilename(OutputCodePath);
             EnumStrs.Add(BaseFileName);
-            FString GeneratedCode = GenerateCPPCode(BaseFileName, StructPrefix, Inherited, VariableNames, DataTypes, Structs);
+            FString GeneratedCode = GenerateCPPCode(InDataTypeSettingsDataTable, BaseFileName, StructPrefix, Inherited, VariableNames, DataTypes, Structs);
             FFileHelper::SaveStringToFile(GeneratedCode, *OutputCodePath, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
 
             SuccessFilesList.Add(ExcelFilePath);
@@ -487,7 +487,8 @@ bool SExcelImporterWidget2::ConvertMultipleExcelToCPP(TArray<TSharedPtr<FExcelFi
 }
 
 // C++ 코드 생성 함수
-FString SExcelImporterWidget2::GenerateCPPCode(
+FString SExcelImporterWidgetEx::GenerateCPPCode(
+    UDataTable* InDataTypeSettingsDataTable,
     const FString& FileName,
     const FString& StructPrefix,
     const TSoftObjectPtr<UScriptStruct> Inherited,
@@ -517,6 +518,7 @@ FString SExcelImporterWidget2::GenerateCPPCode(
     for (FImportStruct ImportStruct : Structs)
     {
         FString StructCPPCode = GenerateCPPStructCode(
+            InDataTypeSettingsDataTable,
             ImportStruct.StructName,
             StructPrefix,
             ImportStruct.Inherited,
@@ -535,7 +537,7 @@ FString SExcelImporterWidget2::GenerateCPPCode(
     GeneratedCode += "\tGENERATED_BODY()\n\n";
     GeneratedCode += "public:\n";
 
-    FString FieldCPPCode = GenerateFieldCPPCode(Inherited, VariableNames, DataTypes);
+    FString FieldCPPCode = GenerateFieldCPPCode(InDataTypeSettingsDataTable, Inherited, VariableNames, DataTypes);
     GeneratedCode += FieldCPPCode;
 
     GeneratedCode += "};\n";
@@ -543,7 +545,8 @@ FString SExcelImporterWidget2::GenerateCPPCode(
 }
 
 // C++ 맴버 변수 코드 생성 함수
-FString SExcelImporterWidget2::GenerateFieldCPPCode(
+FString SExcelImporterWidgetEx::GenerateFieldCPPCode(
+    UDataTable* InDataTypeSettingsDataTable,
     const TSoftObjectPtr<UScriptStruct> Inherited,
     const TArray<FString>& VariableNames,
     const TArray<FString>& DataTypes)
@@ -574,7 +577,7 @@ FString SExcelImporterWidget2::GenerateFieldCPPCode(
         FString InitData;
 
         FString ContextString(TEXT("DataTypeSettingsContext"));
-        FDataTypeSettings* Row = DataTypeSettingsDataTable->FindRow<FDataTypeSettings>(FName(DataTypes[i]), ContextString);
+        FDataTypeSettings* Row = InDataTypeSettingsDataTable->FindRow<FDataTypeSettings>(FName(DataTypes[i]), ContextString);
         if (Row)
         {
             UnrealType = Row->UnrealCodeDataType;
@@ -588,7 +591,8 @@ FString SExcelImporterWidget2::GenerateFieldCPPCode(
 }
 
 // C++ 코드 struct 생성 함수
-FString SExcelImporterWidget2::GenerateCPPStructCode(
+FString SExcelImporterWidgetEx::GenerateCPPStructCode(
+    UDataTable* InDataTypeSettingsDataTable,
     const FString& StructName,
     const FString& StructPrefix, 
     const TSoftObjectPtr<UScriptStruct> Inherited, 
@@ -624,7 +628,7 @@ FString SExcelImporterWidget2::GenerateCPPStructCode(
     GeneratedCode += "\tGENERATED_BODY()\n\n";
     GeneratedCode += "public:\n";
 
-    FString FieldCPPCode = GenerateFieldCPPCode(Inherited, VariableNames, DataTypes);
+    FString FieldCPPCode = GenerateFieldCPPCode(InDataTypeSettingsDataTable, Inherited, VariableNames, DataTypes);
     GeneratedCode += FieldCPPCode;
 
     GeneratedCode += "};\n";
@@ -632,7 +636,7 @@ FString SExcelImporterWidget2::GenerateCPPStructCode(
 }
 
 // 여러 enum 항목을 파일에 추가하는 함수
-void SExcelImporterWidget2::GenerateEnumHeader(const FString& FilePath, const TArray<FString>& EnumStrs)
+void SExcelImporterWidgetEx::GenerateEnumHeader(const FString& FilePath, const TArray<FString>& EnumStrs)
 {
     // 1. 파일 읽기
     FString FileContent;
@@ -643,7 +647,7 @@ void SExcelImporterWidget2::GenerateEnumHeader(const FString& FilePath, const TA
     {
         if (!FFileHelper::LoadFileToString(FileContent, *FilePath))
         {
-            UE_LOG(LogTemp, Error, TEXT("SExcelImporterWidget2::GenerateEnumHeader Failed to load file: %s"), *FilePath);
+            UE_LOG(LogTemp, Error, TEXT("SExcelImporterWidgetEx::GenerateEnumHeader Failed to load file: %s"), *FilePath);
             return;
         }
 
@@ -656,7 +660,7 @@ void SExcelImporterWidget2::GenerateEnumHeader(const FString& FilePath, const TA
             }
             else
             {
-                UE_LOG(LogTemp, Log, TEXT("SExcelImporterWidget2::GenerateEnumHeader Enum entry %s already exists."), *EnumEntry);
+                UE_LOG(LogTemp, Log, TEXT("SExcelImporterWidgetEx::GenerateEnumHeader Enum entry %s already exists."), *EnumEntry);
             }
         }
     }
@@ -669,7 +673,7 @@ void SExcelImporterWidget2::GenerateEnumHeader(const FString& FilePath, const TA
     // 2. 추가할 항목이 없으면 종료
     if (NewEntries.Num() == 0)
     {
-        UE_LOG(LogTemp, Log, TEXT("SExcelImporterWidget2::GenerateEnumHeader No new enum entries to add."));
+        UE_LOG(LogTemp, Log, TEXT("SExcelImporterWidgetEx::GenerateEnumHeader No new enum entries to add."));
         return;
     }
 
@@ -696,21 +700,21 @@ void SExcelImporterWidget2::GenerateEnumHeader(const FString& FilePath, const TA
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("SExcelImporterWidget2::GenerateEnumHeader Failed to find 'Max' enum entry."));
+        UE_LOG(LogTemp, Error, TEXT("SExcelImporterWidgetEx::GenerateEnumHeader Failed to find 'Max' enum entry."));
         return;
     }
 
     // 6. 파일을 UTF-8로 저장
     if (!FFileHelper::SaveStringToFile(FileContent, *FilePath, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
     {
-        UE_LOG(LogTemp, Error, TEXT("SExcelImporterWidget2::GenerateEnumHeader Failed to save file: %s"), *FilePath);
+        UE_LOG(LogTemp, Error, TEXT("SExcelImporterWidgetEx::GenerateEnumHeader Failed to save file: %s"), *FilePath);
         return;
     }
 
-    UE_LOG(LogTemp, Log, TEXT("SExcelImporterWidget2::GenerateEnumHeader Enum entries were successfully added to the file."));
+    UE_LOG(LogTemp, Log, TEXT("SExcelImporterWidgetEx::GenerateEnumHeader Enum entries were successfully added to the file."));
 }
 
-bool SExcelImporterWidget2::CreateDataTable(const TArray<FString>& ExcelPaths, const TArray<FString>& SheetNames, TArray<FString>& GeneratedCodePaths, const TArray<FString>& DataTablePaths)
+bool SExcelImporterWidgetEx::CreateDataTable(const TArray<FString>& ExcelPaths, const TArray<FString>& SheetNames, TArray<FString>& GeneratedCodePaths, const TArray<FString>& DataTablePaths)
 {
     if (ExcelPaths.Num() != DataTablePaths.Num())
     {
@@ -788,7 +792,7 @@ bool SExcelImporterWidget2::CreateDataTable(const TArray<FString>& ExcelPaths, c
     return FailureFilesList.Num() == 0;
 }
 
-bool SExcelImporterWidget2::CreateDataTableFromExcel(const FString& ExcelFilePath, const FString& SheetName, const FString& GeneratedCodePath, const FString& DataTablePath)
+bool SExcelImporterWidgetEx::CreateDataTableFromExcel(const FString& ExcelFilePath, const FString& SheetName, const FString& GeneratedCodePath, const FString& DataTablePath)
 {
     try
     {
@@ -918,7 +922,7 @@ bool SExcelImporterWidget2::CreateDataTableFromExcel(const FString& ExcelFilePat
 }
 
 // 해더파일 경로로 부터 데이터 구조체 정의(타입 정보)를 로드하고 클래스명을 반환하는 함수
-UScriptStruct* SExcelImporterWidget2::LoadStructFromHeaderPath(const FString& HeaderFilePath)
+UScriptStruct* SExcelImporterWidgetEx::LoadStructFromHeaderPath(const FString& HeaderFilePath)
 {
     // 헤더 파일 경로로부터 클래스명 추출
     FString ClassName = FPaths::GetBaseFilename(HeaderFilePath); // 예: MyRowStruct.h -> MyRowStruct
@@ -951,7 +955,7 @@ UScriptStruct* SExcelImporterWidget2::LoadStructFromHeaderPath(const FString& He
  * @param DataTablePath 기존 DataTable을 찾기 위한 경로.
  * @return UDataTable* 새로 생성된 DataTable 또는 초기화된 기존 DataTable.
  */
-UDataTable* SExcelImporterWidget2::CreateNewOrClearDataTable(UScriptStruct* RowStruct, const FString& BaseClassName, const FString& DataTablePath)
+UDataTable* SExcelImporterWidgetEx::CreateNewOrClearDataTable(UScriptStruct* RowStruct, const FString& BaseClassName, const FString& DataTablePath)
 {
     // DataTable 이름 생성 (예: DT_ClassName)
     FString DataTableName = FString::Printf(TEXT("DT_%s"), *BaseClassName);
@@ -990,7 +994,7 @@ UDataTable* SExcelImporterWidget2::CreateNewOrClearDataTable(UScriptStruct* RowS
 }
 
 
-UDataTable* SExcelImporterWidget2::ClearDataTableRows(const FString& DataTablePath, const FString& DataTableName)
+UDataTable* SExcelImporterWidgetEx::ClearDataTableRows(const FString& DataTablePath, const FString& DataTableName)
 {
     // DataTablePath 에서 PackagePath 로 경로 변환
     FString FilePath = FPaths::Combine(DataTablePath, DataTableName);
@@ -1027,7 +1031,7 @@ UDataTable* SExcelImporterWidget2::ClearDataTableRows(const FString& DataTablePa
 }
 
 // Excel 데이터를 기반으로 FTableRowBase 생성 함수
-FTableRowBase* SExcelImporterWidget2::CreateDataTableRowFromExcel(
+FTableRowBase* SExcelImporterWidgetEx::CreateDataTableRowFromExcel(
     /**
     * 절대로 직접 사용하던가 변경하단거 불가함
     * 절대 RowStruct 파라미터의 const 빼지 말것
@@ -1118,7 +1122,7 @@ FTableRowBase* SExcelImporterWidget2::CreateDataTableRowFromExcel(
 }
 
 // DataTable을 어셋으로 저장하는 함수
-void SExcelImporterWidget2::SaveDataTableAsset(UDataTable* DataTable, const FString& DataTablePath)
+void SExcelImporterWidgetEx::SaveDataTableAsset(UDataTable* DataTable, const FString& DataTablePath)
 {
     if (!DataTable)
     {
@@ -1208,7 +1212,7 @@ void SExcelImporterWidget2::SaveDataTableAsset(UDataTable* DataTable, const FStr
     }
 }
 // DataTable을 어셋으로 저장하는 함수
-//void SExcelImporterWidget2::SaveDataTableAsset(UDataTable* DataTable, const FString& DataTablePath)
+//void SExcelImporterWidgetEx::SaveDataTableAsset(UDataTable* DataTable, const FString& DataTablePath)
 //{
 //    if (!DataTable)
 //    {
@@ -1363,7 +1367,7 @@ void SExcelImporterWidget2::SaveDataTableAsset(UDataTable* DataTable, const FStr
 //    PackageTools::UnloadPackages(PackagesToUnload);
 //}
 /*
-void SExcelImporterWidget2::SaveDataTableAsset(UDataTable* DataTable, const FString& DataTablePath)
+void SExcelImporterWidgetEx::SaveDataTableAsset(UDataTable* DataTable, const FString& DataTablePath)
 {
     if (!DataTable)
     {
